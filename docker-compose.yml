@@ -5,16 +5,31 @@ services:
         environment:
             MYSQL_ROOT_PASSWORD: password
         volumes:
-            - C:\docker\jokesdb:/var/lib/mysql
+            - ~/docker/jokes-application/mysql:/var/lib/mysql
         ports:
             - 3307:3306
+    userdb:
+        hostname: userdb
+        image: mongo
+        volumes:
+            - ~/docker/jokes-application/mongo:/data/db
+        ports: 
+            - 27018:27017
+    user-service:
+        hostname: userservice
+        build: ./User Service
+        environment: 
+            - PORT=8082
+            - DB_URI=mongodb://userdb:27017
+        ports:
+            - 8082:8082
     jokes-service:
         hostname: jokesservice
         build: ./Buffoon
         environment:
             spring.datasource.username: root
             spring.datasource.password: password
-            spring.datasource.url: jdbc:mysql://db:3306/spring_app
+            spring.datasource.url: jdbc:mysql://db:3306/jokes_service
         ports:
             - 8080:8080
     ratings-service:
@@ -31,7 +46,14 @@ services:
     rabbitmq:
         hostname: rabbitmq
         image: rabbitmq
-        volumes:
-            - C:\docker\rabbitmq\data:/var/lib/rabbitmq/
-            - C:\docker\rabbitmq\etc:/etc/rabbitmq/
-            - C:\docker\rabbitmq\logs:/var/log/rabbitmq/
+        ports: 
+            - 15691:15691
+            - 15692:15692
+            - 25672:25672
+            - 4369:4369
+            - 5671:5671
+            - 5672:5672
+        # volumes:
+        #     - ~/docker/jokes-application/rabbitmq/etc:/etc/rabbitmq/
+        #     - ~/docker/jokes-application/rabbitmq/logs:/var/log/rabbitmq/
+        #     - ~/docker/jokes-application/rabbitmq/data:/var/lib/rabbitmq/
