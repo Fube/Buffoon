@@ -30,6 +30,7 @@ services:
             spring.datasource.username: root
             spring.datasource.password: password
             spring.datasource.url: jdbc:mysql://db:3306/jokes_service
+            spring.rabbitmq.host: rabbitmq
         ports:
             - 8080:8080
     ratings-service:
@@ -43,6 +44,7 @@ services:
             spring.datasource.password: password
             spring.datasource.url: jdbc:mysql://db:3306/ratings_service
             server.port: 8081
+            spring.rabbitmq.host: rabbitmq
     rabbitmq:
         hostname: rabbitmq
         image: rabbitmq
