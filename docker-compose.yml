@@ -1,4 +1,14 @@
 services:
+    nginx:
+        image: nginx
+        volumes:
+            - ./Frontend/buffoon/build:/usr/share/nginx/html
+            - ./nginx.conf:/etc/nginx/nginx.conf
+        ports:
+            - 80:80
+            - 443:443
+        depends_on:
+            - frontend
     db:
         hostname: db
         image: mysql
@@ -59,3 +69,15 @@ services:
         #     - ~/docker/jokes-application/rabbitmq/etc:/etc/rabbitmq/
         #     - ~/docker/jokes-application/rabbitmq/logs:/var/log/rabbitmq/
         #     - ~/docker/jokes-application/rabbitmq/data:/var/lib/rabbitmq/
+    frontend:
+        build: ./Frontend/buffoon
+    backed:
+        build: ./BackedFront
+        hostname: backedfront
+        environment: 
+            - PORT=8083
+            - JOKE_SERVICE_BASE=http://jokesservice:8080
+            - RATING_SERVICE_BASE=http://ratingsservice:8081
+            - USER_SERVICE_BASE=http://userservice:8082
+        ports:
+            - 8083:8083
