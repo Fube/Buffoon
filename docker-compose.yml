@@ -70,7 +70,10 @@ services:
         #     - ~/docker/jokes-application/rabbitmq/logs:/var/log/rabbitmq/
         #     - ~/docker/jokes-application/rabbitmq/data:/var/lib/rabbitmq/
     frontend:
+        hostname: frontend
         build: ./Frontend/buffoon
+        # ports: 
+        #     - 4000:5000
     backed:
         build: ./BackedFront
         hostname: backedfront
