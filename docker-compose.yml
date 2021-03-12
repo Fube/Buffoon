@@ -15,19 +15,19 @@ services:
             MYSQL_ROOT_PASSWORD: password
         volumes:
             - ~/docker/jokes-application/mysql:/var/lib/mysql
-        # ports:
-        #     - 3307:3306
+        ports:
+            - 3307:3306
     userdb:
         hostname: userdb
         image: mongo
         volumes:
             - ~/docker/jokes-application/mongo:/data/db
-        # ports: 
+        # ports:
         #     - 27018:27017
     rabbitmq:
         hostname: rabbitmq
         image: rabbitmq
-        # ports: 
+        # ports:
         #     - 15691:15691
         #     - 15692:15692
         #     - 25672:25672
@@ -46,6 +46,7 @@ services:
             spring.datasource.password: password
             spring.datasource.url: jdbc:mysql://db:3306/jokes_service
             spring.rabbitmq.host: rabbitmq
+            spring.flyway.url: jdbc:mysql://db:3306/
         # ports:
         #     - 8080:8080
     ratings-service:
@@ -60,10 +61,11 @@ services:
             spring.datasource.url: jdbc:mysql://db:3306/ratings_service
             server.port: 8081
             spring.rabbitmq.host: rabbitmq
+            spring.flyway.url: jdbc:mysql://db:3306/
     user-service:
         hostname: userservice
         build: ./UserService
-        environment: 
+        environment:
             - PORT=8082
             - DB_URI=mongodb://userdb:27017
         # ports:
@@ -71,12 +73,12 @@ services:
     frontend:
         hostname: frontend
         build: ./Frontend
-        # ports: 
+        # ports:
         #     - 4000:5000
     backed:
         build: ./BackedFront
         hostname: backedfront
-        environment: 
+        environment:
             - PORT=8083
             - JOKE_SERVICE_BASE=http://jokesservice:8080
             - RATING_SERVICE_BASE=http://ratingsservice:8081
