@@ -8,6 +8,7 @@ services:
         #     - 443:443
         depends_on:
             - frontend
+
     db:
         hostname: db
         image: mysql
@@ -17,27 +18,46 @@ services:
             - ~/docker/jokes-application/mysql:/var/lib/mysql
         ports:
             - 3307:3306
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "mysqladmin",
+                    "ping",
+                    "-h",
+                    "localhost",
+                    "-p$MYSQL_ROOT_PASSWORD",
+                ]
+            interval: 10s
+            timeout: 10s
+            retries: 5
+            start_period: 40s
+
     userdb:
         hostname: userdb
         image: mongo
         volumes:
             - ~/docker/jokes-application/mongo:/data/db
-        # ports:
-        #     - 27018:27017
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "echo",
+                    "db.runCommand('ping').ok",
+                    "|",
+                    "mongo",
+                    "mongo:27017/ratings_service",
+                    "--quiet",
+                ]
+            interval: 10s
+            timeout: 10s
+            retries: 5
+            start_period: 40s
+
     rabbitmq:
         hostname: rabbitmq
         image: rabbitmq
-        # ports:
-        #     - 15691:15691
-        #     - 15692:15692
-        #     - 25672:25672
-        #     - 4369:4369
-        #     - 5671:5671
-        #     - 5672:5672
-        # volumes:
-        #     - ~/docker/jokes-application/rabbitmq/etc:/etc/rabbitmq/
-        #     - ~/docker/jokes-application/rabbitmq/logs:/var/log/rabbitmq/
-        #     - ~/docker/jokes-application/rabbitmq/data:/var/lib/rabbitmq/
+
     jokes-service:
         hostname: jokesservice
         build: ./JokeService
@@ -49,6 +69,11 @@ services:
             spring.flyway.url: jdbc:mysql://db:3306/
         # ports:
         #     - 8080:8080
+        depends_on:
+            db:
+                condition: service_healthy
+        restart: always
+
     ratings-service:
         hostname: ratingsservice
         build: ./RatingService
@@ -62,19 +87,26 @@ services:
             server.port: 8081
             spring.rabbitmq.host: rabbitmq
             spring.flyway.url: jdbc:mysql://db:3306/
+        depends_on:
+            db:
+                condition: service_healthy
+        restart: always
+
     user-service:
         hostname: userservice
         build: ./UserService
         environment:
             - PORT=8082
             - DB_URI=mongodb://userdb:27017
-        # ports:
-        #     - 8082:8082
+        depends_on:
+            userdb:
+                condition: service_healthy
+        restart: always
+
     frontend:
         hostname: frontend
         build: ./Frontend
-        # ports:
-        #     - 4000:5000
+
     backed:
         build: ./BackedFront
         hostname: backedfront
